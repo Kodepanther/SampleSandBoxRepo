@@ -44,6 +44,7 @@ stages:
             echo "🔸 Environment: $(envName)"
             echo "🔸 Database Server: $(dbServer)"
         - script: echo "✅ Deployment successful for $(envName)"
+        - script: echo "All good for staging"
         
 
 # =======================
@@ -62,3 +63,4 @@ stages:
             echo "🚀 Environment: $(envName)"
             echo "🚀 Database Server: $(dbServer)"
         - script: echo "✅ Deployment successful for $(envName)"
+        - script: echo "All good for prod"
