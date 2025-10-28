@@ -1,3 +1,8 @@
+# azure-pipelines.yml
+# ✅ This pipeline triggers on pushes to dev, staging, or main.
+# ✅ Each stage runs only when its corresponding branch is the source.
+# ✅ Includes debug info so you can see which branch triggered the run.
+
 trigger:
   branches:
     include:
@@ -5,13 +10,18 @@ trigger:
       - staging
       - main
 
+# This pool is your self-hosted agent
 pool:
-    name: SandBoxAgent
+  name: SandBoxAgent
 
 stages:
+# ============================
+# 🔹 Development Stage
+# ============================
 - stage: Dev
   displayName: "Deploy to Dev"
-  condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+  # ✅ Use succeeded() to ensure stage runs only when pipeline runs successfully
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
   jobs:
     - deployment: DeployToDev
       displayName: "Deploy to Development Environment"
@@ -20,12 +30,19 @@ stages:
         runOnce:
           deploy:
             steps:
-              - script: echo "Deploying to Dev environment..."
+              - script: |
+                  echo "🔹 Branch: $(Build.SourceBranch)"
+                  echo "🔹 Build Reason: $(Build.Reason)"
+                  echo "Deploying to Dev environment..."
                 displayName: "Deployment step"
 
+# ============================
+# 🔸 Staging Stage
+# ============================
 - stage: Staging
   displayName: "Deploy to Staging"
-  condition: eq(variables['Build.SourceBranch'], 'refs/heads/staging')
+  dependsOn: []   # ✅ ensures this stage can run independently
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/staging'))
   jobs:
     - deployment: DeployToStaging
       displayName: "Deploy to Staging Environment"
@@ -34,12 +51,19 @@ stages:
         runOnce:
           deploy:
             steps:
-              - script: echo "Deploying to Staging environment..."
+              - script: |
+                  echo "🔸 Branch: $(Build.SourceBranch)"
+                  echo "🔸 Build Reason: $(Build.Reason)"
+                  echo "Deploying to Staging environment..."
                 displayName: "Deployment step"
 
+# ============================
+# 🚀 Production Stage
+# ============================
 - stage: Prod
   displayName: "Deploy to Production"
-  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+  dependsOn: []   # ✅ allows it to trigger directly on its branch
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   jobs:
     - deployment: DeployToProd
       displayName: "Deploy to Production Environment"
@@ -48,5 +72,8 @@ stages:
         runOnce:
           deploy:
             steps:
-              - script: echo "Deploying to Production environment..."
+              - script: |
+                  echo "🚀 Branch: $(Build.SourceBranch)"
+                  echo "🚀 Build Reason: $(Build.Reason)"
+                  echo "Deploying to Production environment..."
                 displayName: "Deployment step"
