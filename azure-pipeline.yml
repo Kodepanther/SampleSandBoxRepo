@@ -1,8 +1,3 @@
-# azure-pipelines.yml
-# ✅ This pipeline triggers on pushes to dev, staging, or main.
-# ✅ Each stage runs only when its corresponding branch is the source.
-# ✅ Includes debug info so you can see which branch triggered the run.
-
 trigger:
   branches:
     include:
@@ -10,18 +5,23 @@ trigger:
       - staging
       - main
 
-# This pool is your self-hosted agent
 pool:
   name: SandBoxAgent
 
 stages:
-# ============================
-# 🔹 Development Stage
-# ============================
+# ==========================================================
+# 1️⃣ DEV STAGE
+# ==========================================================
 - stage: Dev
   displayName: "Deploy to Dev"
-  # ✅ Use succeeded() to ensure stage runs only when pipeline runs successfully
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+  condition: |
+    or(
+      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
+      eq(variables['Build.SourceBranch'], 'refs/heads/staging'),
+      eq(variables['Build.SourceBranch'], 'refs/heads/main')
+    )
+  variables:
+    - group: DevSettings   # Variable group for Dev
   jobs:
     - deployment: DeployToDev
       displayName: "Deploy to Development Environment"
@@ -31,18 +31,22 @@ stages:
           deploy:
             steps:
               - script: |
-                  echo "🔹 Branch: $(Build.SourceBranch)"
-                  echo "🔹 Build Reason: $(Build.Reason)"
-                  echo "Deploying to Dev environment..."
-                displayName: "Deployment step"
+                  echo "---------------------------------"
+                  echo "Deploying to DEV environment..."
+                  echo "Environment: $(envName)"
+                  echo "Database Server: $(dbServer)"
+                  echo "---------------------------------"
+                displayName: "Echo Dev Variables"
 
-# ============================
-# 🔸 Staging Stage
-# ============================
+# ==========================================================
+# 2️⃣ STAGING STAGE
+# ==========================================================
 - stage: Staging
   displayName: "Deploy to Staging"
-  dependsOn: []   # ✅ ensures this stage can run independently
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/staging'))
+  dependsOn: Dev
+  condition: succeeded()  # Run only if Dev succeeded
+  variables:
+    - group: StagingSettings
   jobs:
     - deployment: DeployToStaging
       displayName: "Deploy to Staging Environment"
@@ -52,18 +56,22 @@ stages:
           deploy:
             steps:
               - script: |
-                  echo "🔸 Branch: $(Build.SourceBranch)"
-                  echo "🔸 Build Reason: $(Build.Reason)"
-                  echo "Deploying to Staging environment..."
-                displayName: "Deployment step"
+                  echo "---------------------------------"
+                  echo "Deploying to STAGING environment..."
+                  echo "Environment: $(envName)"
+                  echo "Database Server: $(dbServer)"
+                  echo "---------------------------------"
+                displayName: "Echo Staging Variables"
 
-# ============================
-# 🚀 Production Stage
-# ============================
+# ==========================================================
+# 3️⃣ PRODUCTION STAGE
+# ==========================================================
 - stage: Prod
   displayName: "Deploy to Production"
-  dependsOn: []   # ✅ allows it to trigger directly on its branch
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  dependsOn: Staging
+  condition: succeeded()  # Run only if Staging succeeded
+  variables:
+    - group: ProdSettings
   jobs:
     - deployment: DeployToProd
       displayName: "Deploy to Production Environment"
@@ -73,7 +81,9 @@ stages:
           deploy:
             steps:
               - script: |
-                  echo "🚀 Branch: $(Build.SourceBranch)"
-                  echo "🚀 Build Reason: $(Build.Reason)"
-                  echo "Deploying to Production environment..."
-                displayName: "Deployment step"
+                  echo "---------------------------------"
+                  echo "Deploying to PRODUCTION environment..."
+                  echo "Environment: $(envName)"
+                  echo "Database Server: $(dbServer)"
+                  echo "---------------------------------"
+                displayName: "Echo Prod Variables"
