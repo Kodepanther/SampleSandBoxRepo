@@ -4,6 +4,7 @@ trigger:
       - dev
       - staging
       - main
+      - development  # optional, if that's your actual branch
 
 pool:
   name: SandBoxAgent
@@ -14,14 +15,8 @@ stages:
 # ==========================================================
 - stage: Dev
   displayName: "Deploy to Dev"
-  condition: |
-    or(
-      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/staging'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/main')
-    )
   variables:
-    - group: DevSettings   # Variable group for Dev
+    - group: DevSettings
   jobs:
     - deployment: DeployToDev
       displayName: "Deploy to Development Environment"
@@ -32,6 +27,7 @@ stages:
             steps:
               - script: |
                   echo "---------------------------------"
+                  echo "Branch: $(Build.SourceBranch)"
                   echo "Deploying to DEV environment..."
                   echo "Environment: $(envName)"
                   echo "Database Server: $(dbServer)"
@@ -44,7 +40,7 @@ stages:
 - stage: Staging
   displayName: "Deploy to Staging"
   dependsOn: Dev
-  condition: succeeded()  # Run only if Dev succeeded
+  condition: succeeded()
   variables:
     - group: StagingSettings
   jobs:
@@ -69,7 +65,7 @@ stages:
 - stage: Prod
   displayName: "Deploy to Production"
   dependsOn: Staging
-  condition: succeeded()  # Run only if Staging succeeded
+  condition: succeeded()
   variables:
     - group: ProdSettings
   jobs:
