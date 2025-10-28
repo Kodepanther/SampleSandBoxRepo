@@ -26,6 +26,7 @@ stages:
             echo "🔹 Environment: $(envName)"
             echo "🔹 Database Server: $(dbServer)"
         - script: echo "✅ Deployment successful for $(envName)"
+        - script: echo "All good for dev"
 
 # =======================
 #  STAGING STAGE
@@ -43,6 +44,7 @@ stages:
             echo "🔸 Environment: $(envName)"
             echo "🔸 Database Server: $(dbServer)"
         - script: echo "✅ Deployment successful for $(envName)"
+        
 
 # =======================
 #  PRODUCTION STAGE
