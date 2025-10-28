@@ -1,4 +1,3 @@
-# azure-pipelines.yml
 trigger:
   branches:
     include:
@@ -7,60 +6,47 @@ trigger:
       - main
 
 pool:
-  name: SandboxAgent
+    name: SandBoxAgent
 
 stages:
-# =======================
-#  DEV STAGE
-# =======================
 - stage: Dev
-  displayName: "Deploy to Development"
+  displayName: "Deploy to Dev"
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
-  variables:
-    - group: DevSettings
   jobs:
-    - job: EchoDev
-      displayName: "Show Dev Variables"
-      steps:
-        - script: |
-            echo "🔹 Environment: $(envName)"
-            echo "🔹 Database Server: $(dbServer)"
-        - script: echo "✅ Deployment successful for $(envName)"
-        - script: echo "All good for dev"
+    - deployment: DeployToDev
+      displayName: "Deploy to Development Environment"
+      environment: dev
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - script: echo "Deploying to Dev environment..."
+                displayName: "Deployment step"
 
-# =======================
-#  STAGING STAGE
-# =======================
 - stage: Staging
   displayName: "Deploy to Staging"
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/staging')
-  variables:
-    - group: StagingSettings
   jobs:
-    - job: EchoStaging
-      displayName: "Show Staging Variables"
-      steps:
-        - script: |
-            echo "🔸 Environment: $(envName)"
-            echo "🔸 Database Server: $(dbServer)"
-        - script: echo "✅ Deployment successful for $(envName)"
-        - script: echo "All good for staging"
-        
+    - deployment: DeployToStaging
+      displayName: "Deploy to Staging Environment"
+      environment: staging
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - script: echo "Deploying to Staging environment..."
+                displayName: "Deployment step"
 
-# =======================
-#  PRODUCTION STAGE
-# =======================
 - stage: Prod
   displayName: "Deploy to Production"
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
-  variables:
-    - group: ProdSettings
   jobs:
-    - job: EchoProd
-      displayName: "Show Prod Variables"
-      steps:
-        - script: |
-            echo "🚀 Environment: $(envName)"
-            echo "🚀 Database Server: $(dbServer)"
-        - script: echo "✅ Deployment successful for $(envName)"
-        - script: echo "All good for prod"
+    - deployment: DeployToProd
+      displayName: "Deploy to Production Environment"
+      environment: production
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - script: echo "Deploying to Production environment..."
+                displayName: "Deployment step"
