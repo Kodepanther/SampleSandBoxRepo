@@ -6,6 +6,9 @@ trigger:
       - staging
       - main
 
+pool:
+  name: SandboxAgent
+
 stages:
 # =======================
 #  DEV STAGE
