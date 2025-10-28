@@ -1,0 +1,62 @@
+# azure-pipelines.yml
+trigger:
+  branches:
+    include:
+      - dev
+      - staging
+      - main
+
+pool:
+  name: SandboxAgent
+
+stages:
+# =======================
+#  DEV STAGE
+# =======================
+- stage: Dev
+  displayName: "Deploy to Development"
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+  variables:
+    - group: DevSettings
+  jobs:
+    - job: EchoDev
+      displayName: "Show Dev Variables"
+      steps:
+        - script: |
+            echo "🔹 Environment: $(envName)"
+            echo "🔹 Database Server: $(dbServer)"
+        - script: echo "✅ Deployment successful for $(envName)"
+
+# =======================
+#  STAGING STAGE
+# =======================
+- stage: Staging
+  displayName: "Deploy to Staging"
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/staging')
+  variables:
+    - group: StagingSettings
+  jobs:
+    - job: EchoStaging
+      displayName: "Show Staging Variables"
+      steps:
+        - script: |
+            echo "🔸 Environment: $(envName)"
+            echo "🔸 Database Server: $(dbServer)"
+        - script: echo "✅ Deployment successful for $(envName)"
+
+# =======================
+#  PRODUCTION STAGE
+# =======================
+- stage: Prod
+  displayName: "Deploy to Production"
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+  variables:
+    - group: ProdSettings
+  jobs:
+    - job: EchoProd
+      displayName: "Show Prod Variables"
+      steps:
+        - script: |
+            echo "🚀 Environment: $(envName)"
+            echo "🚀 Database Server: $(dbServer)"
+        - script: echo "✅ Deployment successful for $(envName)"
